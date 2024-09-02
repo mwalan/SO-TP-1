@@ -1,0 +1,18 @@
+Implementar a fsh. Prompt: "fsh>".
+
+A cada linha de comando pode-se solicitar a criação de mais de um processo (5 no máximo). EX: "fsh> comando1 # comando2 # comando3". No caso é solicitado a criação de 3 processos. Somente o primeiro processo é criado em foreground, os demais são criados em background.
+
+Para cada processo criado em background é criado também um processo secundário filho (também em background) que executa o mesmo comando.
+
+Se algum dos processos de uma linha de comando morrer/suspender por causa de um sinal os demais processos também deverão morrer/suspender recebendo o MESMO SINAL, incluindo os processos secundários. Mas caso aconteça de um dos processos secundários receber um sinal nada acontece com os demais. E se qualquer um dos processos morrer por meio de um return/exit nada acontece com os demais.
+
+Caso o usuário digitar Ctrl-C (SIGINT) e ainda há descendentes vivos (os processos secundários devem ser desconsiderados nesse caso) a shell deve imprimir uma mensagem perguntando se o usuário realmente deseja finalizar a shell. Caso a shell não tenha descendentes vivos a shell finaliza sem perguntas.
+! Durante a execução do tratamento do sinal SIGINT, todos os demais sinais devem ser bloqueados (usar a chamada de sistema "sigaction()").
+Todos os descendentes da shell devem ignorar o SIGINT.
+
+Caso o usuário digite Ctrl-Z (SIGTSTP) a shell em si não será suspensa, mas deverá suspender todos os seus descendentes.
+
+Operações internas da shell:
+*waitall: faz com que a shell libere todos os seus descendentes filhos que estejam no estado “Zombie” antes de exibir um novo prompt. Aqui vocês podem desconsiderar os processos secundários.ATENÇÃO: Em algumas implementações Unix, caso um processo receba um sinal enquanto ele esteja bloqueado em uma chamada wait ou waitpid, ele pode retornar da chamada sem que de fato um filho tenha morrido (ou suspenso). Nesse caso a chamada wait/waitpid retorna -1 e a variável global errno (definida em errno.h) é setada com o código "EINTR". Com isso, o programador deve tratar esse caso para evitar um comportamento errado do programa.
+*die: deve terminar a operação da shell, mas antes de morrer, esta deve tormar providências para que todos os seus descendentes vivos morram também (TODOS!).
+Essas operações internas sempre devem terminar com um sinal de fim de linha (return).
